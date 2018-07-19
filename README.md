@@ -1,5 +1,5 @@
 # timer-cm
-A Python context manager for measuring execution time.
+A Python context manager for measuring execution time. Useful in conjunction with [Python's profilers](https://docs.python.org/3.5/library/profile.html), or on its own.
 
 ## Installation
 
@@ -31,17 +31,37 @@ Often you want to know where a long running code block spends its time. Use `tim
 
 ```python
 with Timer('Long task') as timer:
-    with timer.child('First step'):
+    with timer.child('large step'):
         sleep(1)
     for _ in range(5):
-        with timer.child('Many small steps'):
+        with timer.child('small step'):
             sleep(.5)
 ```
 
 Output:
 
 ```
-Long task: 3.520s
-  Many small steps: 2.518s (71%)
-  First step: 1.001s (28%)
+Long task: 3.506s
+  5x small step: 2.503s (71%)
+  1x large step: 1.001s (28%)
+```
+
+To measure times throughout the entire run of your application and report total running times at the end:
+
+```python
+from timer_cm import Timer
+
+_TIMER = Timer('my_fn')
+
+def my_fn():
+	# Suppose this function is called throughout your application.
+	with _TIMER.child('step 1'):
+		...
+	with _TIMER.child('step 2'):
+		...
+	...
+
+import atexit
+atexit.register(_TIMER.print_results)
+
 ```

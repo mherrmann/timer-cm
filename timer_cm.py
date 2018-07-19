@@ -1,5 +1,6 @@
-from timeit import default_timer
 from decimal import Decimal
+from math import ceil, log10
+from timeit import default_timer
 
 class Timer(object):
 	def __init__(self, name, print_results=True):
@@ -8,6 +9,7 @@ class Timer(object):
 		self._print_results = print_results
 		self._start_time = None
 		self._children = {}
+		self._count = 0
 	def __enter__(self):
 		self.start()
 		return self
@@ -23,19 +25,27 @@ class Timer(object):
 			self._children[name] = result
 			return result
 	def start(self):
+		self._count += 1
 		self._start_time = self._get_time()
 	def stop(self):
 		self.elapsed += self._get_time() - self._start_time
 	def print_results(self):
 		print(self._format_results())
 	def _format_results(self, indent='  '):
-		result = '%s: %.3fs' % (self._name, self.elapsed)
 		children = self._children.values()
+		elapsed = self.elapsed or sum(c.elapsed for c in children)
+		result = '%s: %.3fs' % (self._name, elapsed)
+		max_count = max(c._count for c in children) if children else 0
+		count_digits = 0 if max_count <= 1 else int(ceil(log10(max_count + 1)))
 		for child in sorted(children, key=lambda c: c.elapsed, reverse=True):
-			child_lines = child._format_results(indent).split('\n')
-			child_percent = child.elapsed / self.elapsed * 100
-			child_lines[0] += ' (%d%%)' % child_percent
-			for line in child_lines:
+			lines = child._format_results(indent).split('\n')
+			child_percent = child.elapsed / elapsed * 100
+			lines[0] += ' (%d%%)' % child_percent
+			if count_digits:
+				# `+2` for the 'x' and the space ' ' after it:
+				lines[0] = ('%dx ' % child._count).rjust(count_digits + 2) \
+						   + lines[0]
+			for line in lines:
 				result += '\n' + indent + line
 		return result
 	def _get_time(self):

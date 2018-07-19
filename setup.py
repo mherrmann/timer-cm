@@ -10,7 +10,7 @@ description = 'Measure execution time with a context manager.'
 setup(
 	name='timer-cm',
 
-	version='1.0',
+	version='1.1',
 
 	description=description,
 	long_description=
