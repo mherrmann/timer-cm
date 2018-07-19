@@ -18,7 +18,7 @@ setup(
 	url='https://github.com/mherrmann/timer-cm',
 
 	author='Michael Herrmann',
-	author_email='[my first name]@[my last name].io',
+	author_email='michael+removethisifyouarehuman@herrmann.io',
 
 	license='MIT',
 
